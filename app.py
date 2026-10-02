@@ -5,10 +5,6 @@ import time
 import json
 import threading
 
-# Ensure TensorFlow from dl-tf216 conda environment is accessible
-tf_site_packages = r'C:\Users\Lenovo\anaconda3\envs\dl-tf216\Lib\site-packages'
-if os.path.exists(tf_site_packages) and tf_site_packages not in sys.path:
-    sys.path.append(tf_site_packages)
 
 import numpy as np
 from flask import Flask, render_template, request, jsonify, redirect, url_for, Response

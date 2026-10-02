@@ -2,10 +2,6 @@ import os
 import sys
 import numpy as np
 
-# Ensure TensorFlow from dl-tf216 conda environment is accessible
-tf_site_packages = r'C:\Users\Lenovo\anaconda3\envs\dl-tf216\Lib\site-packages'
-if os.path.exists(tf_site_packages) and tf_site_packages not in sys.path:
-    sys.path.append(tf_site_packages)
 
 import tensorflow as tf
 from tensorflow.keras.preprocessing.sequence import pad_sequences
