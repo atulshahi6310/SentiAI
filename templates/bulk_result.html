@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SentiAI — Bulk Results</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bulk_result.css') }}">
+</head>
+<body>
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="shell nav-wrap">
+      <a class="brand" href="/" aria-label="SentiAI home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="brand-name">senti<span>ai</span></span>
+        <span class="brand-version">/ v1.0</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="/">Analyzer</a>
+        <a href="/#bulk-upload">Bulk Upload</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="icon-button theme-toggle" type="button" aria-label="Switch theme">
+          <svg class="sun-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          <svg class="moon-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 15.7A8.5 8.5 0 0 1 8.3 3.5 8.5 8.5 0 1 0 20.5 15.7Z"/></svg>
+        </button>
+        <a class="button button-small button-ghost" href="/">← Back to Analyzer</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="bulk-result-hero shell">
+      <div class="eyebrow"><span class="live-dot"></span> Batch Analysis Complete</div>
+      <h1>Results for<br><em>{{ job.filename }}</em></h1>
+      <p class="hero-lede">{{ job.total_reviews }} reviews analyzed · stored in database · job #{{ job.id }}</p>
+    </section>
+
+    <!-- ═══ SUMMARY CARDS ═══ -->
+    <section class="summary-section shell">
+      <div class="section-kicker"><span>OVERALL SENTIMENT</span><span class="kicker-rule"></span><span class="mono">ACROSS ALL REVIEWS</span></div>
+      <div class="summary-grid">
+
+        <div class="summary-card panel">
+          <div class="summary-label">Processed</div>
+          <div class="summary-value"><span id="processedCount">{{ job.positive_count + job.negative_count }}</span><span style="font-size: 20px; color: var(--ink-muted);"> / {{ job.total_reviews }}</span></div>
+          <div class="summary-sub" id="statusSub">{% if job.status == 'completed' %}Analysis Complete{% else %}Processing in chunks of 2...{% endif %}</div>
+        </div>
+
+        <div class="summary-card panel positive-card">
+          <div class="summary-label">Positive</div>
+          <div class="summary-value pos-value" id="posCount">{{ job.positive_count }}</div>
+          <div class="summary-sub">detected signals</div>
+        </div>
+
+        <div class="summary-card panel negative-card">
+          <div class="summary-label">Negative</div>
+          <div class="summary-value neg-value" id="negCount">{{ job.negative_count }}</div>
+          <div class="summary-sub">detected signals</div>
+        </div>
+
+        <div class="summary-card panel">
+          <div class="summary-label">Avg. Confidence</div>
+          <div class="summary-value" id="avgScore">{% if job.status == 'completed' %}{{ "%.1f"|format(job.avg_score) }}%{% else %}--{% endif %}</div>
+          <div class="summary-sub" id="avgScoreSub">{% if job.status == 'completed' %}mean model score{% else %}Calculating...{% endif %}</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ═══ CHARTS ═══ -->
+    <section class="chart-section shell">
+      <div class="section-kicker"><span>VISUALISATION</span><span class="kicker-rule"></span></div>
+      <div class="chart-grid">
+
+        <!-- Donut chart -->
+        <div class="chart-card panel">
+          <div class="chart-title">Sentiment Split</div>
+          <div class="donut-wrap">
+            <canvas id="donutChart" width="220" height="220" aria-label="Sentiment split donut chart"></canvas>
+            <div class="donut-legend">
+              <div class="legend-item"><span class="legend-dot pos-dot"></span><span>Positive — {{ job.positive_count }}</span></div>
+              <div class="legend-item"><span class="legend-dot neg-dot"></span><span>Negative — {{ job.negative_count }}</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Score distribution bar chart -->
+        <div class="chart-card panel">
+          <div class="chart-title">Score Distribution</div>
+          <canvas id="barChart" aria-label="Score distribution bar chart"></canvas>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ═══ REVIEW TABLE ═══ -->
+    <section class="table-section shell">
+      <div class="section-kicker"><span>INDIVIDUAL RESULTS</span><span class="kicker-rule"></span><span class="mono">{{ job.total_reviews }} ROWS</span></div>
+
+      <!-- Filters -->
+      <div class="table-filters">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="positive">Positive</button>
+        <button class="filter-btn" data-filter="negative">Negative</button>
+        <input class="search-input" type="text" id="searchInput" placeholder="Search reviews…" aria-label="Search reviews">
+      </div>
+
+      <div class="table-wrap">
+        <table class="results-table" id="resultsTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Review</th>
+              <th>Sentiment</th>
+              <th>Score</th>
+              <th>Rating</th>
+            </tr>
+          </thead>
+          <tbody id="resultsTbody">
+            {% for row in rows %}
+            <tr class="result-row {% if row.sentiment == 'Pending' %}pending-row{% elif row.sentiment == 'Positive' %}pos-row{% else %}neg-row{% endif %}" data-index="{{ row.row_index }}" data-sentiment="{{ row.sentiment|lower }}">
+              <td class="row-index">{{ row.row_index + 1 }}</td>
+              <td class="row-review">{{ row.review_text[:180] }}{% if row.review_text|length > 180 %}…{% endif %}</td>
+              <td class="row-sentiment">
+                {% if row.sentiment == 'Pending' %}
+                <span class="sentiment-badge badge-pending">
+                  <span class="spinner-inline"></span> Processing...
+                </span>
+                {% else %}
+                <span class="sentiment-badge {{ 'badge-pos' if row.sentiment == 'Positive' else 'badge-neg' }}">
+                  {{ row.sentiment }}
+                </span>
+                {% endif %}
+              </td>
+              <td class="row-score">
+                <div class="mini-bar-wrap">
+                  {% if row.sentiment == 'Pending' %}
+                  <div class="mini-bar mini-pending" style="width: 0%"></div>
+                  {% else %}
+                  <div class="mini-bar {{ 'mini-pos' if row.sentiment == 'Positive' else 'mini-neg' }}"
+                       style="width: {{ row.score }}%"></div>
+                  {% endif %}
+                </div>
+                <span class="score-num">{% if row.sentiment == 'Pending' %}--{% else %}{{ "%.1f"|format(row.score) }}%{% endif %}</span>
+              </td>
+              <td class="row-rating">
+                <span class="stars-sm">
+                  {% if row.sentiment != 'Pending' %}
+                    {% set stars = (5 if row.score > 80 else (4 if row.score > 60 else (3 if row.score > 40 else (2 if row.score > 20 else 1)))) %}
+                    {{ '★' * stars }}{{ '☆' * (5 - stars) }}
+                  {% endif %}
+                </span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <p class="table-footer-note">Showing all {{ job.total_reviews }} results · Job stored in SQLite database</p>
+    </section>
+
+    <!-- Run another analysis -->
+    <section class="shell cta-section">
+      <a class="button button-primary" href="/">← Analyze another file</a>
+    </section>
+  </main>
+
+  <footer class="site-footer shell">
+    <div class="footer-brand"><span class="brand-mark small" aria-hidden="true"><span></span><span></span><span></span></span><span>For the films that find you.</span></div>
+    <div class="footer-links"><a href="#">Privacy</a><a href="#">Documentation</a><a href="https://github.com/atulshahi6310/SentiAI">GitHub ↗</a></div>
+    <div class="footer-meta"><span class="engine-badge">Made with feeling</span><span>© 2026 SentiAI Labs</span></div>
+  </footer>
+
+  <!-- Pass chart data to JS -->
+  <script>
+    window.SENTIAI_JOB = {
+      positive: {{ job.positive_count }},
+      negative: {{ job.negative_count }},
+      scores:   {{ rows | map(attribute='score') | list | tojson }}
+    };
+  </script>
+  <script src="{{ url_for('static', filename='js/bulk_result.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

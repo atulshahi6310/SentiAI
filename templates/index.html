@@ -1,234 +1,217 @@
-<!DOCTYPE html>
-<html lang="en">
-
+<!doctype html>
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SentiAI - AI Movie Review Analyzer</title>
-    <meta name="description"
-        content="Instantly decode viewer emotions with our premium RNN-powered sentiment engine. Professional accuracy in seconds.">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SentiAI helps you discover how a movie feels before you press play.">
+  <title>SentiAI — Find your next feeling</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-
 <body>
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
 
-    <!-- NAVBAR -->
-    <nav class="navbar">
-        <a href="/" class="navbar-brand">
-            <div class="brand-icon">&#127916;</div>
-            <div class="brand-name">Senti<span>AI</span></div>
-        </a>
-        <div class="navbar-actions">
-            <button class="theme-toggle" title="Toggle theme">&#9728;&#65039;</button>
-            <a href="#" class="btn-api">Get API Access</a>
+  <header class="site-header">
+    <div class="shell nav-wrap">
+      <a class="brand" href="/" aria-label="SentiAI home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="brand-name">senti<span>ai</span></span>
+        <span class="brand-version">/ v1.0</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="#analyzer">Analyzer</a>
+        <a href="#bulk-upload">Bulk Upload</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#capabilities">Capabilities</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="icon-button theme-toggle" type="button" aria-label="Switch theme" title="Switch theme">
+          <svg class="sun-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          <svg class="moon-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 15.7A8.5 8.5 0 0 1 8.3 3.5 8.5 8.5 0 1 0 20.5 15.7Z"/></svg>
+        </button>
+        <a class="button button-small button-ghost" href="#api-access">Get API access <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ===== HERO ===== -->
+    <section class="hero shell" id="analyzer">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="live-dot"></span> For the moments that stay with you</div>
+        <h1>Find your next<br><em>feeling.</em></h1>
+        <p class="hero-lede">A softer way to discover what a film is really saying. Share a review and SentiAI will tell you whether the story leans hopeful, heartfelt, or hard to love.</p>
+        <div class="hero-meta">
+          <div class="meta-item"><strong>01</strong><span>Share a review</span></div>
+          <div class="meta-line"></div>
+          <div class="meta-item"><strong>02</strong><span>Take a moment</span></div>
+          <div class="meta-line"></div>
+          <div class="meta-item"><strong>03</strong><span>Find the feeling</span></div>
         </div>
-    </nav>
-
-    <!-- HERO -->
-    <section class="hero">
-        <h1>AI Movie Review<br>Analyzer</h1>
-        <p>Instantly decode viewer emotions with our premium RNN-powered sentiment engine. Professional accuracy in
-            seconds.</p>
+      </div>
+      <div class="hero-aside" aria-label="Model status">
+        <div class="aside-label">A LITTLE PROMPT</div>
+        <div class="model-name">"The kind of film<br>you want to talk about<br>after the credits."</div>
+        <div class="model-stat"><span>For film lovers</span><strong>✦</strong></div>
+        <div class="model-stat"><span>Made for first watches</span><strong>♡</strong></div>
+        <div class="model-stat"><span>Keep your curiosity</span><strong>→</strong></div>
+        <div class="signal-graphic" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><i></i></div>
+      </div>
     </section>
 
-    <!-- MAIN -->
-    <div class="main-container">
-
-        <!-- Hidden fields to pass server data to JS -->
-        <input type="hidden" id="serverSentiment" value="{{ sentiment|default('') }}">
-        <input type="hidden" id="serverScore" value="{{ score|default('') }}">
-        <input type="hidden" id="serverReview" value="{{ review|default('') }}">
-
-        <!-- INPUT CARD -->
-        <form id="reviewForm" action="/predict" method="post">
-            <div class="input-card">
-                <textarea id="reviewText" name="review" class="review-textarea"
-                    placeholder="Paste a movie review here to analyze sentiment..." maxlength="1500"
-                    required></textarea>
-                <div class="input-toolbar">
-                    <div class="toolbar-left">
-                        <button type="button" class="btn-example" onclick="loadExample()">&#10024; Example
-                            Review</button>
-                        <button type="button" class="btn-clear" onclick="clearText()">&#128465;&#65039; Clear</button>
-                    </div>
-                    <div class="toolbar-right">
-                        <span class="char-count"><span id="charCount">0</span> / 1500 characters</span>
-                        <button type="submit" class="btn-analyze">
-                            Analyze Sentiment &#9889;
-                            <div class="spinner" id="spinner"></div>
-                        </button>
-                    </div>
-                </div>
+    <!-- ===== SINGLE REVIEW WORKSPACE ===== -->
+    <section class="workspace shell">
+      <div class="section-kicker"><span>LET'S TALK ABOUT A FILM</span><span class="kicker-rule"></span><span class="mono">A LITTLE SOMETHING TO START WITH</span></div>
+      <form id="reviewForm" class="analysis-layout" method="post" action="/predict">
+        <div class="input-panel panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-index">01 <span>/</span> YOUR TAKE</div>
+              <h2>What did it make you feel?</h2>
             </div>
+            <span class="status-chip"><span class="status-dot"></span> Ready</span>
+          </div>
+          <label class="sr-only" for="reviewText">Review text</label>
+          <textarea id="reviewText" name="review" maxlength="1500" placeholder="Tell us about the film in your own words…">{{ review|default('') }}</textarea>
+          <div class="input-footer">
+            <span class="char-count"><strong id="charCount">0</strong> / 1500 characters</span>
+            <div class="input-tools">
+              <button class="text-button" type="button" id="exampleButton"><span aria-hidden="true">✦</span> Give me a little inspiration</button>
+              <button class="text-button muted" type="button" id="clearButton">Clear</button>
+            </div>
+          </div>
+          <div class="submit-row">
+            <p class="form-note"><span class="lock-icon" aria-hidden="true">♡</span> Just a small moment of reflection.</p>
+            <button class="button button-primary" type="submit" id="analyzeButton"><span class="button-label">Reveal the feeling</span><span class="button-arrow" aria-hidden="true">→</span><span class="spinner" aria-hidden="true"></span></button>
+          </div>
+        </div>
+
+        <aside class="how-panel" id="how-it-works">
+          <div class="panel-index">02 <span>/</span> A LITTLE MAGIC</div>
+          <h3>From your words<br>to a new perspective.</h3>
+          <div class="pipeline">
+            <div class="pipeline-step"><span class="step-num">01</span><div><strong>Listen</strong><p>We take in the little details of your reaction.</p></div></div>
+            <div class="pipeline-connector"></div>
+            <div class="pipeline-step"><span class="step-num">02</span><div><strong>Notice</strong><p>The mood begins to take shape.</p></div></div>
+            <div class="pipeline-connector"></div>
+            <div class="pipeline-step"><span class="step-num">03</span><div><strong>Share</strong><p>A simple feeling to carry with you.</p></div></div>
+          </div>
+        </aside>
+      </form>
+    </section>
+
+    <!-- ===== SINGLE RESULT ===== -->
+    <section class="result-section shell" id="resultSection" aria-live="polite">
+      <input type="hidden" id="serverSentiment" value="{{ sentiment|default('') }}">
+      <input type="hidden" id="serverScore" value="{{ score|default('') }}">
+      <div class="result-card panel" id="resultCard">
+        <div class="result-main">
+          <div class="result-heading"><span class="panel-index">03 <span>/</span> YOUR FILM FEELING</span><span class="result-time mono">JUST NOW</span></div>
+          <div class="verdict-row"><div class="result-emoji" id="resultEmoji">◎</div><div><div class="result-label" id="resultLabel">DETECTED SENTIMENT</div><h2 id="resultVerdict">Waiting for your text</h2><p id="resultConfidence">Run an analysis to reveal the signal.</p></div></div>
+          <div class="confidence-wrap"><div class="confidence-top"><span>Confidence</span><strong id="confidenceValue">—</strong></div><div class="confidence-track"><div class="confidence-fill" id="confidenceFill"></div></div><div class="confidence-scale"><span>Negative</span><span>Neutral</span><span>Positive</span></div></div>
+        </div>
+        <div class="result-details" id="resultDetails">
+          <div class="detail-card"><span class="detail-label">TONE</span><strong id="toneValue">—</strong><span class="detail-mark">↗</span></div>
+          <div class="detail-card"><span class="detail-label">KEYWORDS</span><strong id="keywordsValue">—</strong><span class="detail-mark">⌁</span></div>
+          <div class="detail-card"><span class="detail-label">OBJECTIVITY</span><strong id="objectivityValue">—</strong><span class="detail-mark">◒</span></div>
+          <div class="detail-card rating-card"><span class="detail-label">ENTITY RATING</span><strong class="stars" id="ratingValue">☆☆☆☆☆</strong><span class="detail-mark">★</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== BULK UPLOAD ===== -->
+    <section class="bulk-section shell" id="bulk-upload">
+      <div class="section-kicker"><span>BULK ANALYSIS</span><span class="kicker-rule"></span><span class="mono">UPLOAD A CSV OR EXCEL FILE</span></div>
+
+      {% if bulk_error %}
+      <div class="bulk-error-banner">
+        <span aria-hidden="true">⚠</span> {{ bulk_error }}
+      </div>
+      {% endif %}
+
+      <div class="bulk-layout">
+        <form id="bulkForm" class="bulk-form panel" method="post" action="/bulk" enctype="multipart/form-data">
+          <div class="panel-head">
+            <div>
+              <div class="panel-index">04 <span>/</span> BATCH PROCESSING</div>
+              <h2>Analyze many reviews at once.</h2>
+            </div>
+            <span class="status-chip"><span class="status-dot"></span> Ready</span>
+          </div>
+
+          <!-- Dropzone -->
+          <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload CSV or Excel file">
+            <input type="file" id="fileInput" name="file" accept=".csv,.xls,.xlsx" class="dropzone-input" aria-label="Select file">
+            <div class="dropzone-content" id="dropzoneContent">
+              <div class="dropzone-icon" aria-hidden="true">⌁</div>
+              <p class="dropzone-title">Drop your file here</p>
+              <p class="dropzone-sub">or <button type="button" class="text-button" id="browseButton">browse to upload</button></p>
+              <p class="dropzone-hint">Supports CSV, XLS, XLSX · Max 16 MB</p>
+            </div>
+            <div class="dropzone-preview" id="dropzonePreview" style="display:none">
+              <div class="file-chip">
+                <span class="file-chip-icon" aria-hidden="true">◈</span>
+                <span class="file-chip-name" id="fileChipName"></span>
+                <span class="file-chip-size" id="fileChipSize"></span>
+                <button type="button" class="file-chip-remove" id="removeFile" aria-label="Remove file">✕</button>
+              </div>
+              <p class="dropzone-ready">Ready to analyze — click the button below.</p>
+            </div>
+          </div>
+
+          <!-- Column hint -->
+          <div class="column-hint">
+            <span class="detail-label">COLUMN DETECTION</span>
+            <p>SentiAI auto-detects your review column. Preferred column names: <code>review</code>, <code>text</code>, <code>comment</code>, <code>feedback</code>. Any string column works as a fallback.</p>
+          </div>
+
+          <div class="submit-row bulk-submit-row">
+            <p class="form-note"><span class="lock-icon" aria-hidden="true">◈</span> Each row is analyzed individually then stored.</p>
+            <button class="button button-primary" type="submit" id="bulkButton" disabled>
+              <span class="button-label">Analyze File</span>
+              <span class="button-arrow" aria-hidden="true">→</span>
+              <span class="spinner" aria-hidden="true"></span>
+            </button>
+          </div>
         </form>
 
-        <!-- RESULT CARD (populated by JS from hidden fields) -->
-        <div class="result-card" id="resultCard">
-            <div class="result-main">
-                <div class="result-emoji" id="resultEmoji"></div>
-                <div style="flex:1;">
-                    <div class="result-header">
-                        <div>
-                            <div class="result-label" id="resultLabel">DETECTED SENTIMENT</div>
-                            <div class="result-sentiment" id="resultSentiment"></div>
-                        </div>
-                        <div class="result-right">
-                            <div class="result-confidence-text" id="resultConfidence"></div>
-                            <div class="confidence-bar">
-                                <div class="confidence-fill" id="confidenceFill" style="width: 0%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="result-details">
-                <div class="detail-item">
-                    <div class="detail-label">Tone</div>
-                    <div class="detail-value" id="detailTone"></div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Keywords</div>
-                    <div class="detail-value" id="detailKeywords"></div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Objectivity</div>
-                    <div class="detail-value" id="detailObjectivity"></div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Entity Rating</div>
-                    <div class="detail-value" id="detailRating"></div>
-                </div>
-            </div>
-        </div>
+        <!-- Info aside -->
+        <aside class="bulk-aside panel">
+          <div class="panel-index">HOW IT WORKS</div>
+          <h3>The batch<br>pipeline.</h3>
+          <div class="pipeline">
+            <div class="pipeline-step"><span class="step-num">01</span><div><strong>Parse</strong><p>CSV / Excel is read and the review column is detected automatically.</p></div></div>
+            <div class="pipeline-connector"></div>
+            <div class="pipeline-step"><span class="step-num">02</span><div><strong>Chunk</strong><p>Reviews are batched in groups of 32 for efficient inference.</p></div></div>
+            <div class="pipeline-connector"></div>
+            <div class="pipeline-step"><span class="step-num">03</span><div><strong>Store</strong><p>Every result is persisted in SQLite with score &amp; sentiment.</p></div></div>
+            <div class="pipeline-connector"></div>
+            <div class="pipeline-step"><span class="step-num">04</span><div><strong>Visualise</strong><p>An overall summary and chart are shown instantly.</p></div></div>
+          </div>
+        </aside>
+      </div>
+    </section>
 
-        <!-- FEATURE CARDS -->
-        <div class="features">
-            <div class="feature-card">
-                <div class="feature-icon">&#9889;</div>
-                <div class="feature-title">Low Latency</div>
-                <div class="feature-desc">Processing in under 150ms per batch.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">&#127760;</div>
-                <div class="feature-title">Multi-language</div>
-                <div class="feature-desc">Support for over 15 global languages.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">&#128202;</div>
-                <div class="feature-title">Historical Logs</div>
-                <div class="feature-desc">Export and save analysis results instantly.</div>
-            </div>
-        </div>
-    </div>
-    <!-- FOOTER -->
-    <footer class="footer">
-        <div class="footer-links">
-            <a href="#">Privacy Policy</a>
-            <a href="#">Documentation</a>
-            <a href="#">Github</a>
-        </div>
-        <div class="footer-right">
-            <div class="engine-badge">Powered by RNN Engine v1.0</div>
-            <div class="footer-copyright">&copy; 2026 SentiAI Labs. All rights reserved to Atul Shahi Private Ltd.</div>
-        </div>
-    </footer>
+    <!-- ===== CAPABILITIES ===== -->
+    <section class="capabilities shell" id="capabilities">
+      <div class="section-kicker"><span>THE LITTLE THINGS WE NOTICE</span><span class="kicker-rule"></span></div>
+      <div class="capability-grid">
+        <article class="capability-card"><div class="capability-icon">☼</div><div><h3>A quick little read</h3><p>Get a feeling in the time it takes to settle into your seat.</p></div><span class="card-index">01</span></article>
+        <article class="capability-card"><div class="capability-icon">♡</div><div><h3>Made for curious people</h3><p>Simple language for the complicated feeling a good story leaves behind.</p></div><span class="card-index">02</span></article>
+        <article class="capability-card"><div class="capability-icon">✦</div><div><h3>Bulk batch analysis</h3><p>Upload hundreds of reviews at once — each analyzed, stored, and visualized.</p></div><span class="card-index">03</span></article>
+      </div>
+    </section>
+  </main>
 
-    <script>
-        var textarea = document.getElementById('reviewText');
-        var charCountEl = document.getElementById('charCount');
+  <footer class="site-footer shell" id="api-access">
+    <div class="footer-brand"><span class="brand-mark small" aria-hidden="true"><span></span><span></span><span></span></span><span>For the films that find you.</span></div>
+    <div class="footer-links"><a href="#privacy">Privacy</a><a href="#docs">Documentation</a><a href="https://github.com/atulshahi6310/SentiAI">GitHub ↗</a></div>
+    <div class="footer-meta"><span class="engine-badge">Made with feeling</span><span>© 2026 SentiAI Labs</span></div>
+  </footer>
 
-        textarea.addEventListener('input', function () {
-            charCountEl.textContent = textarea.value.length;
-        });
-
-        function loadExample() {
-            var examples = [
-                "This movie was absolutely breathtaking! The cinematography was stunning, the acting was superb, and the storyline kept me on the edge of my seat from start to finish. A true masterpiece of modern cinema that will be remembered for decades.",
-                "An incredible journey through emotion and artistry. Every scene was carefully crafted, the score was hauntingly beautiful, and the performances were nothing short of Oscar-worthy. This is filmmaking at its finest.",
-                "What a disappointment. The plot was predictable, the dialogue felt forced, and the pacing was painfully slow. I expected much more from such a talented cast. Save your money and skip this one."
-            ];
-            textarea.value = examples[Math.floor(Math.random() * examples.length)];
-            charCountEl.textContent = textarea.value.length;
-        }
-
-        function clearText() {
-            textarea.value = '';
-            charCountEl.textContent = '0';
-        }
-
-        document.getElementById('reviewForm').addEventListener('submit', function () {
-            document.getElementById('spinner').style.display = 'block';
-        });
-
-        // === THEME TOGGLE ===
-        var themeToggle = document.querySelector('.theme-toggle');
-        var savedTheme = localStorage.getItem('sentiai-theme') || 'dark';
-
-        // Apply saved theme on load
-        if (savedTheme === 'light') {
-            document.documentElement.setAttribute('data-theme', 'light');
-            themeToggle.innerHTML = '&#127769;';
-        }
-
-        themeToggle.addEventListener('click', function () {
-            var currentTheme = document.documentElement.getAttribute('data-theme');
-            if (currentTheme === 'light') {
-                document.documentElement.removeAttribute('data-theme');
-                themeToggle.innerHTML = '&#9728;&#65039;';
-                localStorage.setItem('sentiai-theme', 'dark');
-            } else {
-                document.documentElement.setAttribute('data-theme', 'light');
-                themeToggle.innerHTML = '&#127769;';
-                localStorage.setItem('sentiai-theme', 'light');
-            }
-        });
-
-        var sentiment = document.getElementById('serverSentiment').value;
-        var score = document.getElementById('serverScore').value;
-        var review = document.getElementById('serverReview').value;
-
-        if (sentiment && score) {
-            var isPositive = sentiment.indexOf('Positive') !== -1;
-            var scoreNum = parseFloat(score);
-
-            textarea.value = review;
-            charCountEl.textContent = review.length;
-
-            var resultCard = document.getElementById('resultCard');
-            resultCard.classList.add('visible');
-
-            document.getElementById('resultEmoji').textContent = isPositive ? '\uD83D\uDE0A' : '\uD83D\uDE1E';
-
-            var labelEl = document.getElementById('resultLabel');
-            labelEl.textContent = 'DETECTED SENTIMENT';
-            if (!isPositive) {
-                labelEl.classList.add('negative-label');
-            }
-
-            document.getElementById('resultSentiment').textContent = isPositive ? 'Overwhelmingly Positive' : 'Predominantly Negative';
-
-            document.getElementById('resultConfidence').textContent = score + '% Confidence';
-            var fillEl = document.getElementById('confidenceFill');
-            fillEl.style.width = score + '%';
-            if (!isPositive) {
-                fillEl.classList.add('negative-fill');
-            }
-
-            document.getElementById('detailTone').textContent = isPositive ? 'Enthusiastic' : 'Critical';
-            document.getElementById('detailKeywords').textContent = isPositive ? 'Cinematic, Masterpiece' : 'Disappointing, Weak';
-            document.getElementById('detailObjectivity').textContent = 'Subjective (' + Math.round(scoreNum) + '%)';
-
-            var rating;
-            if (scoreNum > 80) rating = '5 / 5 Stars';
-            else if (scoreNum > 60) rating = '4 / 5 Stars';
-            else if (scoreNum > 40) rating = '3 / 5 Stars';
-            else if (scoreNum > 20) rating = '2 / 5 Stars';
-            else rating = '1 / 5 Stars';
-            document.getElementById('detailRating').textContent = rating;
-        }
-    </script>
-
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
-
 </html>
